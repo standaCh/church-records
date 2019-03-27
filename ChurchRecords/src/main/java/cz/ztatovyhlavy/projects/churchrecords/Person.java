@@ -20,6 +20,7 @@ package cz.ztatovyhlavy.projects.churchrecords;
 
 import java.util.Calendar;
 import java.time.LocalDate;
+import java.time.Period;
 import java.util.Comparator;
 
 
@@ -32,7 +33,7 @@ public class Person {
     String surname;
     LocalDate dateOfBirth;
     LocalDate dateOfMarriage;
-    LocalDate startOfMemberhsip;
+    LocalDate startOfMembership;
     int age;
     int anniversary;
 
@@ -42,21 +43,33 @@ public class Person {
      * @param surname
      * @param dateOfBirth
      * @param dateOfMarriage
-     * @param startOfMemberhsip
+     * @param startOfMembership
      */
-    public Person(String name, String surname, LocalDate dateOfBirth, LocalDate dateOfMarriage, LocalDate startOfMemberhsip) {
+    public Person(String name, String surname, String dateOfBirth, String dateOfMarriage, String startOfMembership) {
+        this(name, surname, dateOfBirth != null ? LocalDate.parse(dateOfBirth) : null, dateOfMarriage != null ? LocalDate.parse(dateOfMarriage) : null, startOfMembership != null ? LocalDate.parse(startOfMembership) : null);
+    }
+
+    /**
+     * Class constructor
+     * @param name
+     * @param surname
+     * @param dateOfBirth
+     * @param dateOfMarriage
+     * @param startOfMembership
+     */
+    public Person(String name, String surname, LocalDate dateOfBirth, LocalDate dateOfMarriage, LocalDate startOfMembership) {
         this.name = name;
         this.surname = surname;
         this.dateOfBirth = dateOfBirth;
         this.dateOfMarriage = dateOfMarriage;
-        this.startOfMemberhsip = startOfMemberhsip;
+        this.startOfMembership = startOfMembership;
         this.anniversary = 0;
-        this.age =  Calendar.getInstance().get(Calendar.YEAR) - 1900 - this.dateOfBirth.getYear();
+        this.age = dateOfBirth != null ? Period.between(dateOfBirth, LocalDate.now()).getYears() : 0;
     }
 
     @Override
     public String toString() {
-        return "Person{" + "name=" + name + ", surname=" + surname + ", dateOfBirth=" + dateOfBirth + ", dateOfMarriage=" + dateOfMarriage + '}';
+        return "Person{" + "name=" + name + ", surname=" + surname + ", dateOfBirth=" + dateOfBirth + ", dateOfMarriage=" + dateOfMarriage + ", startOfMembership=" + startOfMembership + '}';
     }
     
     /**
@@ -64,7 +77,7 @@ public class Person {
      * @return Year when person was born
      */
     public int getYearOfBirth() {
-        return dateOfBirth.getYear();
+        return dateOfBirth != null ? dateOfBirth.getYear() : 0;
     }
     
     /**
@@ -72,7 +85,7 @@ public class Person {
      * @return Month when person was born
      */
     public int getMonthOfBirth() {
-        return dateOfBirth.getMonthValue();
+        return dateOfBirth != null ? dateOfBirth.getMonthValue() : 0;
     }
     
     /**
@@ -80,7 +93,7 @@ public class Person {
      * @return Day when person was born
      */
     public int getDayOfBirth() {
-        return dateOfBirth.getDayOfMonth();
+        return dateOfBirth != null ? dateOfBirth.getDayOfMonth() : 0;
     }
     
     /**
@@ -88,7 +101,7 @@ public class Person {
      * @return Date of membership start
      */
     public LocalDate getStartOfMembership() {
-        return startOfMemberhsip;
+        return startOfMembership;
     }
     
     /**
@@ -96,23 +109,7 @@ public class Person {
      * @return Current age
      */
     public int getCurrentAge() {
-        int currentMonth = Calendar.getInstance().get(Calendar.MONTH);
-        if (currentMonth < this.getMonthOfBirth())
-        {
-            return age-1;
-        } else if (currentMonth > this.getMonthOfBirth())
-        {
-            return age;
-        } else
-        {
-            if (Calendar.getInstance().get(Calendar.DAY_OF_MONTH) < this.getDayOfBirth())
-            {
-                return age-1;
-            } else
-            {
-                return age;
-            }
-        }
+        return age;
     }
     
     private static int compareDates(LocalDate date1, LocalDate date2)
