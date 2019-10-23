@@ -25,8 +25,8 @@ import java.util.Comparator;
 
 
 /**
- * Class storing information about one person
- * @author standaCh
+ * Class storing information about one person 
+* @author standaCh
  */
 public class Person {
     String name;
