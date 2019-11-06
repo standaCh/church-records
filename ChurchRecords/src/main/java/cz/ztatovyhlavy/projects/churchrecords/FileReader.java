@@ -35,7 +35,6 @@ import java.util.logging.Logger;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -55,11 +54,32 @@ public class FileReader {
     private static final String ROW_WITH_MEMBERSHIP = "cislo-sloupce-s-datem-vstupu-do-sboru";
 
     /**
+     * Function reads date from given cell
+     * @param cell
+     * @param fieldName
+     * @param name
+     * @param surname
+     * @return List of persons
+     */
+    private LocalDate readDateFromCell(Cell cell, String fieldName, String name, String surname)
+    {
+        switch (cell.getCellTypeEnum()) {
+            case NUMERIC:
+                return cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            case BLANK:
+                return null;
+            default:
+                LOGGER.log(Level.SEVERE, "Error in {0} date for {1} {2}", new Object[]{fieldName, name, surname});
+        }
+        return null;
+    }
+    
+    /**
      * Function reads given sheet
      * @param workbook
      * @param sheetName
      * @param skipMembership
-     * @return
+     * @return List of persons
      */
     public List<Person> readSheet(Workbook workbook, String sheetName, Properties properties, boolean skipMembership)
     {
@@ -92,48 +112,15 @@ public class FileReader {
                 }
                 else if (colNr == Integer.valueOf(properties.getProperty(ROW_WITH_BIRTHDAY)))
                 {
-                        if (cell.getCellTypeEnum() == CellType.BLANK)
-                        {
-                            birth = null;
-                        }
-                        else if (cell.getCellTypeEnum() == CellType.NUMERIC)
-                        {
-                            birth = cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                        }
-                        else
-                        {
-                            LOGGER.log(Level.SEVERE, "Error in birthday date for {0} {1}", new Object[]{name, surname});
-                        }
+                    birth = readDateFromCell(cell, "birthday", name, surname);
                 }
                 else if (colNr == Integer.valueOf(properties.getProperty(ROW_WITH_WEDDING_DATE)))
                 {
-                    if (cell.getCellTypeEnum() == CellType.BLANK)
-                        {
-                            marriage = null;
-                        }
-                        else if (cell.getCellTypeEnum() == CellType.NUMERIC)
-                        {
-                            marriage = cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                        }
-                        else
-                        {
-                           LOGGER.log(Level.SEVERE, "Error in wedding date for {0} {1}", new Object[]{name, surname});
-                        }
+                    marriage = readDateFromCell(cell, "marriage", name, surname);
                 }
                 else if (colNr == Integer.valueOf(properties.getProperty(ROW_WITH_MEMBERSHIP)))
                 {
-                        if (cell.getCellTypeEnum() == CellType.BLANK)
-                        {
-                            startOfMembership = null;
-                        }
-                        else if (cell.getCellTypeEnum() == CellType.NUMERIC)
-                        {
-                            startOfMembership = cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-                        }
-                        else
-                        {
-                           LOGGER.log(Level.SEVERE, "Error in start membership date for {0} {1}", new Object[]{name, surname});
-                        }
+                    startOfMembership = readDateFromCell(cell, "start membership", name, surname);
                 }
                 colNr++;
                 if ((skipMembership && colNr > Integer.valueOf(properties.getProperty(ROW_WITH_WEDDING_DATE)))
@@ -156,7 +143,7 @@ public class FileReader {
     }
     
     /**
-     *
+     * Function reads workbook configured in given properties
      * @param properties
      * @return List of people belonging to the church
      * @throws IOException
@@ -167,9 +154,7 @@ public class FileReader {
     {
         People people = null;
         String a = properties.getProperty("soubor");
-        System.out.println(a);
         URL res = getClass().getClassLoader().getResource(a);
-        System.out.println(res);
         File file = Paths.get(res.toURI()).toFile();
         String fileName = file.getAbsolutePath();
         try (Workbook workbook = WorkbookFactory.create(new File(fileName), properties.getProperty("heslo"))) {

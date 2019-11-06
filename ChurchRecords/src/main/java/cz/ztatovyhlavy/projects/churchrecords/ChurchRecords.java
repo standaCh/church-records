@@ -54,11 +54,11 @@ public class ChurchRecords {
             }
         } catch (Exception e) {
             LOGGER.severe(e.toString());
+            return;
 	}
         try {
             FileReader fileReader = new FileReader();
             People people = fileReader.readWorkbook(prop);
-            System.out.println(people.getMembers().size());
         } catch (IOException ex) {
             Logger.getLogger(ChurchRecords.class.getName()).log(Level.SEVERE, null, ex);
         } catch (InvalidFormatException ex) {
